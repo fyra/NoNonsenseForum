@@ -169,7 +169,7 @@ function formatText ($text, $rss=NULL) {
 			((?:(?:http|ftp)s?|irc)?:\/\/)				# $1 = protocol
 			(							# $2 = friendly URL (no protocol)
 					#[^\p{Z}\p{C}\/] matches not "separator", "other" and forwardslash
-				[^\p{Z}\p{C}\/]{1,}(?:\.[^\p{Z}\p{C}\/]{2,6})+	# domain name
+				[^\p{Z}\p{C}\/]{1,}				# domain name
 			)(\/)?							# $3 = slash is excluded from friendly URL
 			(?(3)(							# $4 = folders and filename, relative URL
 				(?>						# folders and filename
@@ -180,7 +180,7 @@ function formatText ($text, $rss=NULL) {
 				)*
 			)?)
 		|
-			([a-z0-9\._%+\-]+@[^\p{Z}\p{C}\/]{1,}(?:\.[^\p{Z}\p{C}\/]{2,6})+)	# $5 = e-mail
+			([a-z0-9\._%+\-]+@[^\p{Z}\p{C}\/]{1,})			# $5 = e-mail
 		)/xiu',
 		//capture the starting point of the match, so that `$m[x][0]` is the text and $m[x][1] is the offset
 		$text, $m, PREG_OFFSET_CAPTURE,
