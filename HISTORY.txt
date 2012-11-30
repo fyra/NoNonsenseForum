@@ -1,3 +1,57 @@
+v22	13.OCT.12
+*	Posts with invalid HTML now display a message, rather than dumping PHP errors
+*	RSS URL in the HTML meta was wrong and had been for some time!
+*	Massively improved transliteration from thread title to filename / URL; if using PHP5.4 with the 'intl' extension
+	enabled, even Greek / Hebrew / Arabic / Japanese / Chinese (and more) will be transliterated into ASCII! 
+*	Fixed italics appearing in the middle of URLs
+*	Fixed bug with URL parsing with subdomains
+*	Improved code markup "`...`" parsing
+*	Improved templating speed, with thanks to Sani
+*	Improved .htaccess compatibility with Mac OS, with thanks to Zegnat
+*	Fixed lock button accidentally showing sometimes, with thanks to Paul M.
+
+v21	08.JUL.12
+*	Support for running without HTAccess:
+	NoNonsenseForum will now auto-detect if '.htaccess' is missing or disabled and fall back to running without,
+	automatically rewriting URLs to full form. Note that to be able to use NNF without HTAccess,
+	you will have to move the "users" folder to a private location, using the feature below
+*	Added `FORUM_USERS` option to 'config.default.php' to set the location where the passwords are saved. you will need
+	to change this option to run NoNonsense Forum without HTAccess. It can also be used to share the same users between
+	multiple forums or even other compatible software
+*	Added Windows 8 Metro pinned-site tile "metro-tile.default.png",
+	you can override it by providing your own "metro-tile.png"
+*	`METRO_COLOUR` theme option to set the Metro tile colour on Windows 8 and the pinned-site colour on Desktop IE
+
+v20	19.JUN.12
+*	HiDPI / Retina display graphics
+*	Massively improved error messages
+*	Using a blockquote directly within blockquote fixed
+*	Forum title truncated "…" if too long for screen size
+*	Google search and IE9 metadata was moved out of core and into 'theme.php'
+*	Typo in 'lang.example.php' that was causing errors when making translations
+*	Custom logo option had been broken for a long time, sorry!
+
+v19	03.MAY.12
+*	Translation support
+	-	Themes can provide their own translations and admins can add more themselves easily
+		(no translations are provided with NNF, yet, this release just adds support)
+	-	Browser language is auto-detected, user can select one, and a default can be set by the admin
+	-	Markup.txt removed, moved to a themed / translatable page
+	-	Privacy policy added (also translatable)
+	-	Translations for 'about.html' can be provided with 'about_en.html' where 'en' is the language code
+	-	Page titles on index / thread / append & delete cannot be translated just yet,
+		support for this will be added in a later release
+*	Fixed a long-standing bug that caused page boundaries (i.e. posts per page) to be incorrectly calculated
+*	Fixed incompaitbility with Windows servers involving page numbers in URLs. '+' is now used instead of ':'
+*	Fixed bug with stickies not showing if no non-sticky threads exist (with thanks to "Sani")
+*	Moved `theme_pageList` from 'theme.config.default.php' and into a new 'theme.php' for storing the theme functions;
+	this allows each theme to use different types of lists without 'theme.config.php' having to be updated all the time
+*	Page numbers are now validated / bounded
+*	Current page number more visible
+*	Added INSTALL.txt
+*	If a mod / member, threads in locked forums no longer show warning message
+	(similar to the change in v18 that removed the same warning from index pages)
+
 v18	05.MAR.12
 *	'delete.html' had been missing for some time!
 *	The sticky-thread icon had been missing for an equally long time
