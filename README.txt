@@ -1,4 +1,4 @@
-NoNonsense Forum v22 © Copyright (CC-BY) Kroc Camen 2012
+NoNonsense Forum v24 © Copyright (CC-BY) Kroc Camen 2010-2013
 ========================================================================
 A simple forum that focuses on discussion and simplicity.
 http://camendesign.com/nononsense_forum
@@ -184,14 +184,115 @@ password as their NoNonsense Forum username.
 ========================================================================
 See LICENCE.txt for licence details
 
-*       Jon Gjengset            - Original theme / mobile theme
-*       "JJ"                    - Quote syntax
-*       "Martijn"               - Lynx support
-*       "Temukki"               - Bugs
-*       Richard van Velzen      - subfolder support / other fixes,
-                                  additional markup implementation
-*       "Fyra"                  - UTF-8 fix for templates
-*       "Sani"                  - Bugs
+I'd like to thank the following individuals for suggesting ideas or
+contributing directly to NoNonsense Forum.
 
-*       The users of Camen Design Forum <forum.camendesign.com>
-        for testing and support
+I'd like to also thank the users of Camen Design Forum
+<forum.camendesign.com> for testing and support.
+
+Name	Issue
+------------------------------------------------------------------------
+bh8(dot)vn & zuchto
+*	Suggestion to improve transliteration further
+*	Fallback if "iconv" is missing
+
+Bruno Héridet
+*	Duplicate ID in the HTML
+
+David Hund
+*	Code typo in `DOMDocument`
+
+fyra
+*	IDN URLs
+*	UTF-8 characters no longer hex-encoded in the output
+
+gardener
+*	Critical typo in "lang.example.php"
+
+JBark
+*	Use `clearstatcache` to ensure index ordering is right
+*	Accidental double-`<link>` to favicon
+
+JJ
+*	Wrong usage of PHP header function
+*	Add "noindex, nofollow" to delete page
+*	Blockquote syntax idea
+
+Jon Gjengset / Jonhoo
+*	Original "Grayscale" theme
+*	Original mobile theme
+*	`$` alternative syntax for code blocks
+*	Read-locking of threads during writes
+*	Help with HTTPS support
+*	Raised issue with PHP short tags
+*	Delete message the same when deleting thread and post
+*	Many HTML & CSS fixes
+
+Jose Pedro Arvela / jparvela
+*	Changing `static::` to `self::`
+*	Suggestion for "@user" syntax
+
+macsupport.gr
+*	Regex backtrace limit
+
+Martijn
+*	Lynx support
+*	Use `rel="nofollow external"` on external links
+*	Improved ".htaccess" compatibility with Mac OS
+*	Title-line self links (this was quite complex)
+*	Duplicate appends
+*	Help with various transliteration aspects
+*	Better whitespace trimming
+*	Help fixing missing "?" in no-HTACCESS URLs
+
+nkrs
+*	Opera speed dial help
+
+Nicolai
+*	Unecessary ChromeFrame header in ".htaccess"
+
+Nikolai
+*	Changing `static::` to `self::`
+*	Opera speed dial help
+
+oldtimes
+*	Original suggestion to transliterate thread titles
+
+Paul M
+*	Lock button sometimes showing by accident
+
+Philip Butkiewicz
+*	Fix up `<script>` outputting in DOMTemplate
+
+Richard van Velzen / rvanvelzen
+*	Running in a sub-folder
+*	HTTPS support
+*	Remove "/users/" from "robots.txt"
+*	CSS fixes
+*	Inline code, heading and divider markup implementation
+*	Fault with adding new threads
+*	URL parsing with subdomains containing a dash
+*	`$1` being stripped from code spans / blocks
+*	Suggestion to improve error messages
+*	Closing bracket in URL when URL is last text in a quote
+*	Block quote regex fixes
+*	Post starting with code block doesn't show that block
+
+Sani
+*	Better tag matching when repairing output HTML
+*	Stickies not showing if no other threads
+*	Add leading '0' to "Expires" header to comply with spec
+*	Debugging DOMTemplate speed
+*	Suggestion for HiDPI graphics
+
+starbeamrainbowlab
+*	Discovering missing "?" in no-HTACCESS URLs
+
+Steve Bir
+*	Pages not working in sub forums
+
+Temukki
+*	Delete page missing
+*	Timezone option
+
+Anybody else forgotten along the way, get in touch.

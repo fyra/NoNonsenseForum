@@ -1,6 +1,6 @@
 <?php //translation file
 /* ====================================================================================================================== */
-/* NoNonsense Forum v22 © Copyright (CC-BY) Kroc Camen 2012
+/* NoNonsense Forum v24 © Copyright (CC-BY) Kroc Camen 2010-2013
    licenced under Creative Commons Attribution 3.0 <creativecommons.org/licenses/by/3.0/deed.en_GB>
    you may do whatever you want to this code as long as you give credit to Kroc Camen, <camendesign.com>
 *//*
@@ -25,9 +25,57 @@ how to create a theme translation:
 
 //name of the language, as the user will use to select it;
 //therefore should be the name of the language, written in that language - i.e. "Espanol" (Spanish)
-$LANG['en']['name']    = 'English';
+$LANG['en']['name']    		= 'English';
 
-$LANG['en']['strings'] = array (
+//the `date` format code used to print human readable dates into the HTML,
+//see <php.net/manual/en/function.date.php> for documentation
+$LANG['en']['date_format'] 	= 'd M ’y · H:i';
+
+//the following template replacements are done using `sprintf`,
+//see <php.net/manual/en/function.sprintf.php> for details
+
+//the HTML title for index and thread pages
+//"%1$s" - the title
+//"%2$s" - if on page 2 or greater, `THEME_TITLE_PAGENO` will be inserted here, otherwise it will be removed
+$LANG['en']['title']		= '%1$s%2$s';
+
+//the page number, added to the titles of index pages and threads
+//"%1$u" - the page number
+$LANG['en']['title_pagenum']	= ' + %1$u';
+
+//the title for append pages
+//"%1$s" - the post title (will come from `THEME_RE` for replies)
+$LANG['en']['title_append']	= 'Append to %1$s';
+
+//the title for delete pages
+//"%1$s" - the post title (will come from `THEME_RE` for replies)
+$LANG['en']['title_delete']	= 'Delete %1$s?';
+
+//reply number shown in threads as a permalink
+//"%1$u" - the number of the reply
+$LANG['en']['replynum']		= '#%1$u.';
+
+//title format for each reply
+//"%1$u" - number of the reply
+//"%2$s" - the thread title
+$LANG['en']['re']		= 'RE[%1$u]: %2$s';
+
+//text used when appending to a post:
+//(markup can be used as this is run through `formatText`)
+//"%1$s" - username of who posted
+//"%2$s" - human-readable time, as per `DATE_FORMAT`
+$LANG['en']['appended']		= ':: @%1$s added on %2$s';
+
+//HTML that replaces a post when it's deleted (this is not rectroactive)
+$LANG['en']['delete_user']	= '<p>This post was deleted by its owner</p>';
+$LANG['en']['delete_mod']	= '<p>This post was deleted by a moderator</p>';
+
+//HTML used to replace an invalid post:
+$LANG['en']['corrupt']		= '<p>This post is corrupted and cannot be displayed</p>';
+
+
+//the translation strings
+$LANG['en']['strings']		= array (
 
 /* xpath/shorthand:			replacement text:			description:
    ====================================================================================================================== */
@@ -61,12 +109,12 @@ $LANG['en']['strings'] = array (
 
 //access rights
 ,'#nnf_forum-lock-threads'		=> <<<HTML
-	Only <a href="#mods">moderators or members</a> can start new threads here [<a href="?signin">sign-in</a>],
+	Only <a href="#mods">moderators or members</a> can start new threads here,
 	but <em>anybody</em> can reply to existing threads.
 HTML
 ,'#nnf_forum-lock-posts'		=> <<<HTML
 	Only <a href="#mods">moderators or members</a> can participate here.
-	<a href="?signin">Sign-in</a> if you are a moderator or member in order to post.
+	Sign-in if you are a moderator or member in order to post.
 HTML
 
 //list of threads
@@ -87,7 +135,7 @@ HTML
 
 ,'.nnf_forum-locked'			=> <<<HTML
 	Only <a href="#mods">moderators or members</a> can reply to this thread.
-	<a href="?signin">Sign-in</a> if you are a moderator or member in order to post.
+	Sign-in if you are a moderator or member in order to post.
 HTML
 
 ,'#nnf_replies/h1'			=> 'Replies'				//title for replies list
@@ -107,8 +155,8 @@ HTML
 ,'#delete/h1'				=> 'Delete'				//delete form title
 
 ,'label@for="remove"/span'		=> 'Remove completely (moderators only)'
-,'#nnf_remove"/ul/li[1]'		=> 'The post will be removed completely from the thread, rather than blanked'
-,'#nnf_remove"/ul/li[2]'		=> 'Only posts on the last page of the thread can be removed completely (so as to not break permalinks)'
+,'#nnf_remove/ul/li[1]'			=> 'The post will be removed completely from the thread, rather than blanked'
+,'#nnf_remove/ul/li[2]'			=> 'Only posts on the last page of the thread can be removed completely (so as to not break permalinks)'
 
 ,'#delete/form/p/'.
  'label@for="submit"/span'		=> 'Delete'				//form submit button
@@ -473,7 +521,7 @@ HTML
 ,'.nnf_signed-in'			=> <<<HTML
 	Signed in as<br /><b class="nnf_signed-in-name">Kroc</b>
 HTML
-,'.nnf_signed-out/a'			=> 'Sign in'
+,'.nnf_signed-out/input@value'		=> 'Sign in'
 
 );
 

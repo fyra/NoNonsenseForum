@@ -1,6 +1,6 @@
 <?php //bootstraps the forum
 /* ====================================================================================================================== */
-/* NoNonsense Forum v22 © Copyright (CC-BY) Kroc Camen 2012
+/* NoNonsense Forum v24 © Copyright (CC-BY) Kroc Camen 2010-2013
    licenced under Creative Commons Attribution 3.0 <creativecommons.org/licenses/by/3.0/deed.en_GB>
    you may do whatever you want to this code as long as you give credit to Kroc Camen, <camendesign.com>
 *//*
@@ -8,7 +8,8 @@
 	
 	const / var	attribs	description
 	--------------------------------------------------------------------------------------------------------------------
-	key:		/	ends with a slash
+	key:		b	boolean (true / false)
+			/	ends with a slash
 			//	begins and ends with a slash
 			   ?	OS-dependent slashes (use `DIRECTORY_SEPERATOR` to concatenate)
 			   U	URL-encoded. use for HTML, do not use for server-side paths
@@ -17,7 +18,7 @@
 	FORUM_LIB	/  ?	full server path to the 'lib' folder
 	FORUM_PATH	// U	relative URL from the web-root, to NNF
 				if NNF is at root, this would be "/", otherwise the "/sub-folder/" NNF is within
-	HTACCESS		boolean if the ".htaccess" file is present and enabled or not
+	HTACCESS	b	if the ".htaccess" file is present and enabled or not
 	
 	-- everything in 'config.php' (if present) and 'config.default.php' --
 	
@@ -28,26 +29,42 @@
 	PATH_URL	/  U	URL-encoded version of `PATH` for use in constructing URLs
 	PATH_DIR	// ?	relative server path from NNF's root (`FORUM_ROOT`) to the current sub-forum
 	SUBFORUM		the name of the current sub-forum (regardless of nesting), not URL-encoded
+	FORM_SUBMIT	b	if an input form has been submitted (new-thread / reply / delete / append)
 	
 	NAME			username given
 	PASS			password given
-	AUTH			boolean, if the username / password are correct
-	AUTH_HTTP		boolean, if the authentication was via HTTP_AUTH *and* was correct
+	AUTH		b	if the username / password are correct
+	AUTH_HTTP	b	if the authentication was via HTTP_AUTH *and* was correct
 				(will be false if the username / password were wrong, even if HTTP_AUTH was used)
 	
 	FORUM_LOCK		the contents of 'locked.txt' which sets restrictions on the forum / sub-forums
 				see section 5 in the README file
 	$MODS			array of the names of moderators for the whole forum, and the current sub-forum
 	$MEMBERS		array of the names of members for the current sub-forum
-	IS_MOD			if the current viewer is a moderator for the current forum
-	IS_MEMBER		if the current viewer is a member of the current forum
+	IS_MOD		b	if the current viewer is a moderator for the current forum
+	IS_MEMBER	b	if the current viewer is a member of the current forum
 	
 	THEME_ROOT	/  ?	full server path to the currently selected theme
 	
+	-- everything in 'theme.php' (some dynamic strings for the default language) --
+	
 	-- everything in 'theme.config.php' (if present) and 'theme.config.default.php' --
 	
-	$LANG			array of language translations. see 'lang.example.php' for details
-	LANG			currently selected language, '' for default
+	-- depending on `THEME_LANGS`, the contents of the 'lang.*.php' files --
+	
+	LANG			currently user-selected language, '' for default
+	
+	DATE_FORMAT		the human-readable date format of the currently user-selected language
+	THEME_TITLE		the `sprintf`-formatted `<title>` string of index / thread pages in the selected language
+	THEME_TITLE_PAGENO	the `sprintf`-formatted optional page-number portion of the title, in the selected lang.
+	THEME_TITLE_APPEND	the `sprintf`-formatted `<title>` string for the append page, in the selected language
+	THEME_TITLE_DELETE	the `sprintf`-formatted `<title>` string for the delete page, in the selected language
+	THEME_REPLYNO		the `sprintf`-formatted string for post numbering in threads, in the selected language
+	THEME_RE		the `sprintf`-formatted prefix for reply titles (e.g. "RE[1]:..."), in the selected lang.
+	THEME_APPENDED		the plain-text markup divider inserted when appending posts, in the forum's default lang.
+	THEME_DEL_USER		the HTML message used when a user deletes their own post, in the forum's default language
+	THEME_DEL_MOD		the HTML message used when a mod deletes a post, in the forum's default langugae
+	THEME_HTML_ERROR	the HTML message used when a post is corrupt (malformed HTML), in the forum's default lang.
 */	
 
 
@@ -56,6 +73,10 @@
 //default UTF-8 throughout
 mb_internal_encoding ('UTF-8');
 mb_regex_encoding    ('UTF-8');
+
+//attempt to fix a small regex backtrace limit in PHP<5.3.7 that might cause the blockquote markup processing to fail
+//source: <www.kavoir.com/2009/12/php-regular-expression-matching-input-subject-string-length-limit.html>
+@ini_set ('pcre.backtrack_limit', 1000000);
 
 //full server path for absolute references, this includes the any sub-folders NNF might be in
 define ('FORUM_ROOT',		dirname (__FILE__));
@@ -70,7 +91,7 @@ require_once FORUM_LIB.'domtemplate/domtemplate.php';		//import the templating e
 
 //location of NNF relative to the webroot, i.e. if NNF is in a sub-folder or not
 //we URL-encode this as it’s never used for server-side paths, `FORUM_ROOT` / `FORUM_LIB` are for that
-define ('FORUM_PATH', 		safeURL (str_replace (
+define ('FORUM_PATH', safeURL (str_replace (
 	array ('\\', '//'), '/',				//- replace Windows forward-slash with backslash
 	dirname ($_SERVER['SCRIPT_NAME']).'/'			//- always starts with a slash and ends in one
 )));
@@ -87,16 +108,16 @@ define ('FORUM_PATH', 		safeURL (str_replace (
 //(`FORUM_TIMEZONE` is set in the config and defaults to 'UTC')
 date_default_timezone_set (FORUM_TIMEZONE);
 
-//the full URL of the site is dependant on HTTPS configuration, so we wait until now to define it
+//the full URL of the site is dependent on HTTPS configuration, so we wait until now to define it
 define ('FORUM_URL',		'http'.				//base URL to produce hyperlinks throughout:
 	(FORUM_HTTPS || @$_SERVER['HTTPS'] == 'on' ? 's' : '').	//- if HTTPS is enforced, links in RSS will use it
 	'://'.$_SERVER['HTTP_HOST']
 );
 
 //is the htaccess working properly?
-//(.htaccess sets this variable for us)
+//('.htaccess' sets this variable for us)
 define ('HTACCESS', (bool) @$_SERVER['HTTP_HTACCESS']);
-//if ".htaccess" is missing or disabled, and the "users" folder is in an insecure location, warn the site admin to move it
+//if '.htaccess' is missing or disabled, and the 'users' folder is in an insecure location, warn the site admin to move it
 if (!HTACCESS && FORUM_USERS == 'users') require FORUM_LIB.'error_htaccess.php';
 
 /* common input
@@ -113,12 +134,19 @@ define ('PATH_DIR', !PATH ? DIRECTORY_SEPARATOR : DIRECTORY_SEPARATOR.str_replac
 //(not used in URLs, so we use `PATH` instead of `PATH_URL`)
 define ('SUBFORUM', @end (explode ('/', trim (PATH, '/'))));
 
+//deny access to some folders
+//TODO: this should generate a 403, but we don't have a 403 page designed yet
+foreach (array ('users/', 'lib/', 'themes/', 'cgi-bin/') as $_) if (stripos ($_, PATH) === 0) die ();
+
 //we have to change directory for `is_dir` to work, see <uk3.php.net/manual/en/function.is-dir.php#70005>
 //being in the right directory is also assumed for reading 'mods.txt' and when generating the RSS (`indexRSS`)
 //(oddly with `chdir` the path must end in a slash)
 @chdir (FORUM_ROOT.PATH_DIR) or die ('Invalid path');
 //TODO: that should generate a 404, but we can't create a 404 in PHP that will send the server's provided 404 page.
 //      I may revist this if I create an NNF-provided 404 page
+
+//was an input form submitted? (used to determine form error checking; this doesn't apply to the sign-in button)
+define ('FORM_SUBMIT', (isset ($_POST['x'], $_POST['y']) || isset ($_POST['submit_x'], $_POST['submit_y'])));
 
 
 /* access control
@@ -139,12 +167,11 @@ define ('PASS', safeGet (@$_SERVER['PHP_AUTH_PW']   ? @$_SERVER['PHP_AUTH_PW']  
 if ((	//if HTTP authentication is used, we don’t need to validate the form fields
 	@$_SERVER['PHP_AUTH_USER'] && @$_SERVER['PHP_AUTH_PW']
 ) || (	//if an input form was submitted:
+	FORM_SUBMIT &&
 	//are the name and password non-blank?
 	NAME && PASS &&
 	//the email check is a fake hidden field in the form to try and fool spam bots
-	isset ($_POST['email']) && @$_POST['email'] == 'example@abc.com' &&
-	//I wonder what this does...?
-	(isset ($_POST['x'], $_POST['y']) || isset ($_POST['submit_x'], $_POST['submit_y']))
+	isset ($_POST['email']) && @$_POST['email'] == 'example@abc.com'
 )) {
 	//users are stored as text files based on the hash of the given name
 	$name = hash ('sha512', strtolower (NAME));
@@ -163,6 +190,12 @@ if ((	//if HTTP authentication is used, we don’t need to validate the form fie
 	//if signed in with HTTP_AUTH, confirm that it’s okay to use
 	//(e.g. the user could still have given the wrong password with HTTP_AUTH)
 	define ('AUTH_HTTP', @$_SERVER['PHP_AUTH_USER'] ? AUTH : false);
+	
+	//if the user clicked the sign-in button to authenticate, do a 303 redirect to the same URL to 'eat' the
+	//form-submission so that if they click the back-button, they don't get prompted to "resubmit the form data"
+	if (@$_POST['signin'] && AUTH_HTTP) header (
+		'Location: http'.(FORUM_HTTPS ? 's' : '').'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'], true, 301
+	);
 } else {
 	define ('AUTH',      false);
 	define ('AUTH_HTTP', false);
@@ -197,6 +230,8 @@ define ('IS_MEMBER', AUTH && isMember (NAME));
 
 /* theme & translation
    ====================================================================================================================== */
+/* load the theme configuration
+   ---------------------------------------------------------------------------------------------------------------------- */
 //shorthand to the server-side location of the particular theme folder (this gets used a lot)
 define ('THEME_ROOT', FORUM_ROOT.DIRECTORY_SEPARATOR.'themes'.DIRECTORY_SEPARATOR.FORUM_THEME.DIRECTORY_SEPARATOR);
 //load the theme-specific functions
@@ -206,11 +241,13 @@ define ('THEME_ROOT', FORUM_ROOT.DIRECTORY_SEPARATOR.'themes'.DIRECTORY_SEPARATO
 //include the theme defaults
 @(include THEME_ROOT.'theme.config.default.php') or require FORUM_LIB.'error_configtheme.php';
 
+/* load translations and select one
+   ---------------------------------------------------------------------------------------------------------------------- */
 //include the language translations
-$LANG = array ();
 foreach (explode (' ', THEME_LANGS) as $lang) @include THEME_ROOT."lang.$lang.php";
 
 //get / set the language to use
+//(note that the actual translation of the HTML is done in `prepareTemplate` in 'lib/functions.php')
 define ('LANG',
 	//if the language selector has been used to choose a language:
 	isset ($_POST['lang']) && setcookie (
@@ -228,8 +265,23 @@ define ('LANG',
 	//all else failing, use the default language
 	: THEME_LANG))
 );
-//don’t treat language choice as an invalid form error
-if (isset ($_POST['lang'])) unset ($_POST);
+
+//for curtness, and straight-forward compatibility with older versions of NNF, we shorthand these translations;
+//the defaults (`LANG`='') are defined in 'theme.php' and overrided if the user selects a language ('lang.*.php') 
+//(the purpose of each of these constants are described in the list at the top of this page)
+@define ('DATE_FORMAT',	$LANG[LANG]['date_format']);
+@define ('THEME_TITLE',	$LANG[LANG]['title']);
+@define ('THEME_TITLE_PAGENO',	$LANG[LANG]['title_pagenum']);
+@define ('THEME_TITLE_APPEND',	$LANG[LANG]['title_append']);
+@define ('THEME_TITLE_DELETE',	$LANG[LANG]['title_delete']);
+@define ('THEME_REPLYNO',	$LANG[LANG]['replynum']);
+//these texts get permenantly inserted into the RSS, so we don't refer to the user-selected language
+//but the default language set for the whole forum
+@define ('THEME_RE',		$LANG[THEME_LANG]['re']);
+@define ('THEME_APPENDED',	$LANG[THEME_LANG]['appended']);
+@define ('THEME_DEL_USER',	$LANG[THEME_LANG]['delete_user']);
+@define ('THEME_DEL_MOD', 	$LANG[THEME_LANG]['delete_mod']);
+@define ('THEME_HTML_ERROR',	$LANG[THEME_LANG]['corrupted']);
 
 
 /* send HTTP headers
@@ -245,9 +297,9 @@ if (FORUM_HTTPS) if (@$_SERVER['HTTPS'] == 'on') {
 	header ('Location: https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'], true, 301);
 }
 
-//if the sign-in link was clicked, (and they're not already signed-in), invoke a HTTP_AUTH request in the browser:
+//if the sign-in button was clicked, (and they're not already signed-in), invoke a HTTP_AUTH request in the browser:
 //the browser will pop up a login box itself (no HTML involved) and continue to send the name & password with each request
-if (!AUTH_HTTP && isset ($_GET['signin'])) {
+if (!AUTH_HTTP && isset ($_POST['signin'])) {
 	header ('WWW-Authenticate: Basic');
 	header ('HTTP/1.0 401 Unauthorized');
 	//we don't die here so that if they cancel the login prompt, they shouldn't get a blank page
