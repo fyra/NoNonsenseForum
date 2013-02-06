@@ -219,10 +219,35 @@ if ($threads || @$stickies) {
 	$item = $template->repeat ('.nnf_thread');
 	
 	//generate the list of threads with data, for the template
-	foreach ($threads as $file) if (
+	foreach ($threads as $file) if {
 		//read the file, and refer to the last post made
-		$xml = @simplexml_load_file ($file)
-	) if (	//get the last post in the thread
+		$xml = @simplexml_load_file ($file);
+		//
+		$fyra_thread= $xml->channel->xpath ('item');
+		$post = array_pop ($thread);
+		$template->set (array (	
+			'#nnf_post-title'		=> $xml->channel->title,	
+			'time#nnf_post-time'		=> date (DATE_FORMAT, strtotime ($post->pubDate)),	
+			'time#nnf_post-time@datetime'	=> gmdate ('r', strtotime ($post->pubDate)),	
+			'#nnf_post-author'		=> $post->author,
+		))->remove (array (
+			//if the user who made the post is a mod, also mark the whole post as by a mod
+			//(you might want to style any posts made by a mod differently)
+			'.nnf_post@class, #nnf_post-author@class' => !isMod ($post->author) ? 'nnf_mod' : false,
+			//append / delete links?
+			'#nnf_post-append, #nnf_post-delete' => !CAN_REPLY
+		));
+		try {	
+			//insert the post-text, dealing with an invalid HTML error
+			$template->setValue ('#nnf_post-text', $post->description, true);
+			$template->remove (array ('.nnf_post@class' => 'nnf_error'));
+		} catch (Exception $e) {
+			//if the HTML was invalid, replace with the corruption message	
+			$template->setValue ('#nnf_post-text', THEME_HTML_ERROR, true);	
+			//remove the append button
+			$template->remove ('#nnf_post-append');
+		}
+	} if (	//get the last post in the thread
 		$last = &$xml->channel->item[0]
 		//apply the data to the template
 	) $item->set (array (
